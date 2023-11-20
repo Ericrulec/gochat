@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package proto.gochat;
+
+option go_package = "github.com/Ericrulec/gochat/proto";
+
+message QueryUser {
+    string user_id = 1;
+}
+
+message User {
+    string user_id = 1;
+    string name = 2;
+    UserStatusCode status = 3;
+
+    enum UserStatusCode {
+        UNKNOWN_STATUS = 0;
+        OFFLINE = 1; 
+        ONLINE = 2;
+    }
+}
+
+message ConnectUserRequest {
+  string user_id = 1;
+  string name = 2;
+  string device = 3;
+}
+
+message DisconnectUserRequest {
+  User user = 1;
+  string device = 2;
+}
+
+message ChatMessage {
+    string chat_id = 1;
+    User from_user = 2;
+    User to_user = 3;
+    string body = 4;
+    string time_stamp = 5;
+}
+
+message ChatMessageStatus {
+    ChatMessage chat_message = 1;
+    MessageStatus msg_status = 2;
+
+    enum MessageStatus {
+        UNKNOWN_STATUS = 0;
+        NOT_DELIVERED = 1;
+        DELIVERED = 2;
+    }
+}
+
+message ChatMessageResponse {
+    ChatMessage chat_message = 1;
+    MessageStatus msg_status = 2;
+
+    enum MessageStatus {
+        UNKNOWN_STATUS = 0;
+        NOT_DELIVERED = 1;
+        DELIVERED = 2;
+    }
+}
+
+message QueryMessagesRequest {
+    User user1 = 1;
+    User user2 = 2;
+    string time_constraint = 3;
+    int32 limit = 4;
+}
+
+message QueryMessagesResponse {
+    User user1 = 1;
+    User user2 = 2;
+    repeated ChatMessage messages = 3;
+}
+
+service MessagingService {
+
+    rpc GetUser(QueryUser) returns (User);
+
+    rpc ConnectUser(ConnectUserRequest) returns (stream ChatMessage);
+
+    rpc DisconnectUser(DisconnectUserRequest) returns (User);
+
+    rpc BroadcastMessage(ChatMessage) returns (ChatMessageResponse);
+
+    rpc UpdateMessageStatus(ChatMessageStatus) returns (ChatMessageStatus);
+
+    rpc GetMessageStatus(ChatMessage) returns (ChatMessageStatus);
+
+    rpc GetMessages(QueryMessagesRequest) returns (QueryMessagesResponse);
+}
+
